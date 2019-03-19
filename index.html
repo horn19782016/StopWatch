@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<head>
+     <title>秒表 19.3.5 8:28 by:逆火狂飙 horn19782016@163.com</title>
+	 
+	 <style>
+	 #canvas{
+		background:#ffffff;
+		cursor:pointer;
+		margin-left:10px;
+		margin-top:10px;
+		-webkit-box-shadow:3px 3px 6px rgba(0,0,0,0.5);
+		-moz-box-shadow:3px 3px 6px rgba(0,0,0,0.5);
+		box-shadow:3px 3px 6px rgba(0,0,0,0.5);
+	 }
+	 
+	 #controls{
+		margin-top:10px;
+		margin-left:15px;
+	 }
+	 </style>
+	 
+    </head>
+
+     <body onload="init()">
+		<div id="controls">
+			<input id='animateBtn' type='button' value='开始'/>
+			<input id='elapsedTxt' type='text' value='' readonly/>
+		</div>
+	 
+        <canvas id="canvas" width="400px" height="400px" >
+            出现文字表示你的浏览器不支持HTML5
+        </canvas>
+     </body>
+</html>
+<script type="text/javascript">
+<!--
+var paused=true;
+animateBtn.onclick=function(e){
+	paused=! paused;
+	
+	if(paused){
+		animateBtn.value="开始";	
+		writeElapsed();
+		stopWatch.stop();
+	}else{	
+		animateBtn.value="停止";
+		elapsedTxt.value='0';
+		stopWatch.start();
+		window.requestAnimationFrame(animate); 
+	}
+	
+	//alert("isRunning()="+stopWatch.isRunning());
+	//alert("getElapsedTime()="+stopWatch.getElapsedTime());
+	//alert("getPointerAngle()="+stopWatch.getPointerAngle());
+}
+
+var stopWatch;// 秒表对象
+var ctx;// 绘图环境
+var r;// 表盘半径
+function init(){
+	// init Canvas
+	var canvas=document.getElementById('canvas');
+	r=200; 
+	canvas.width =2*r;
+	canvas.height=2*r;
+	ctx=canvas.getContext('2d');
+	
+	stopWatch=new Stopwatch();
+	stopWatch.reset();
+	
+	index=0;
+};
+
+function writeElapsed(){
+	var date3=stopWatch.getElapsedTime();
+	
+	//计算出相差天数
+	var days=Math.floor(date3/(24*3600*1000))
+	 
+	//计算出小时数
+	var leave1=date3%(24*3600*1000)    //计算天数后剩余的毫秒数
+	var hours=Math.floor(leave1/(3600*1000))
+	
+	//计算相差分钟数
+	var leave2=leave1%(3600*1000)        //计算小时数后剩余的毫秒数
+	var minutes=Math.floor(leave2/(60*1000))
+
+	//计算相差秒数
+	var leave3=leave2%(60*1000)      //计算分钟数后剩余的毫秒数
+	var seconds=Math.round(leave3/1000)
+	
+	var str="共用时";
+	if(days>0){
+		str=str+days+"天";
+	}
+	if(hours>0){
+		str=str+hours+"小时";
+	}
+	if(minutes>0){
+		str=str+minutes+"分钟";
+	}
+	if(seconds>0){
+		str=str+seconds+"秒";
+	}
+	str=str+(date3 % 1000)+"毫秒";
+	
+	elapsedTxt.value=str;
+}
+
+function writeUsed(){
+	var date3=stopWatch.getElapsedTime();
+	
+	//计算出相差天数
+	var days=Math.floor(date3/(24*3600*1000))
+	 
+	//计算出小时数
+	var leave1=date3%(24*3600*1000)    //计算天数后剩余的毫秒数
+	var hours=Math.floor(leave1/(3600*1000))
+	
+	//计算相差分钟数
+	var leave2=leave1%(3600*1000)        //计算小时数后剩余的毫秒数
+	var minutes=Math.floor(leave2/(60*1000))
+
+	//计算相差秒数
+	var leave3=leave2%(60*1000)      //计算分钟数后剩余的毫秒数
+	var seconds=Math.round(leave3/1000)
+	
+	var str="已用时";
+	if(days>0){
+		str=str+days+"天";
+	}
+	if(hours>0){
+		str=str+hours+"小时";
+	}
+	if(minutes>0){
+		str=str+minutes+"分钟";
+	}
+	if(seconds>0){
+		str=str+seconds+"秒";
+	}
+	//str=str+(date3 % 1000)+"毫秒";
+	
+	elapsedTxt.value=str;
+}
+
+function draw(){
+	// Clear Canvas
+	ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+	ctx.fillStyle="#ECF5FF";
+	ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
+	
+	// Paint Scales
+	var width = ctx.canvas.width;
+	var height = ctx.canvas.height;
+	var BL = width / 200;
+	
+	ctx.save();
+		ctx.translate(r,r);// 平移到几何中心
+		
+		// 画外面的蓝边
+		ctx.beginPath();
+		ctx.lineWidth = 5 * BL;//线要 乘上 比例
+		ctx.strokeStyle = "#2894FF";
+		ctx.arc(0, 0, r - 18 * BL, 2 * Math.PI, false);//乘上比例
+		ctx.stroke();
+		ctx.closePath();
+		
+		ctx.beginPath();
+		ctx.lineWidth = 1 * BL;//线要 乘上 比例
+		ctx.strokeStyle = "#2894FF";
+		ctx.arc(0, 0, 2 * BL, 2 * Math.PI, false);//乘上比例
+		ctx.stroke();
+		ctx.closePath();
+
+		// 画表盘数字
+		ctx.fillStyle="#2894FF";
+		var hourNumber = [15, 20, 25, 30, 35, 40, 45,50, 55, 0, 5,10,];
+		ctx.font = 10 * BL + 'px Arial';//字体也有乘比例 字符串拼接
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+
+		hourNumber.forEach(function (number, i) {
+			var rad = 2 * Math.PI / 12 * i;
+			var x = Math.cos(rad) * (r - 8 * BL);
+			var y = Math.sin(rad) * (r - 8 * BL);
+			ctx.fillText(number, x, y);
+		});
+
+		// 画刻度
+		for (var i = 0; i < 60; i+=0.5) {
+			var rad = 2 * Math.PI / 60 * i;
+			
+			var x1 = Math.cos(rad) * (r - 20 * BL);
+			var y1 = Math.sin(rad) * (r - 20 * BL);
+			var x2 = Math.cos(rad) * (r - 24 * BL);
+			var y2 = Math.sin(rad) * (r - 24 * BL);
+			
+			if (i % 2.5 == 0) {
+				x2 = Math.cos(rad) * (r - 26 * BL);
+				y2 = Math.sin(rad) * (r - 26 * BL);
+			} 
+			
+			ctx.beginPath();
+			ctx.lineWidth = 0.5 * BL;//线要 乘上 比例
+			ctx.strokeStyle = "#2894FF";
+			ctx.moveTo(x1,y1);
+			ctx.lineTo(x2,y2);
+			
+			ctx.stroke();
+			ctx.closePath();
+		}
+		
+		
+		// 画秒针
+		var date = new Date();
+		var second=date.getSeconds();
+		var angleS=second*6;
+		
+		ctx.save();
+			//ctx.rotate(getRad(-90));
+			ctx.lineWidth=0.5;
+
+			ctx.strokeStyle = "black";
+			ctx.beginPath();
+
+			var angle=stopWatch.getPointerAngle();
+			if(Math.abs(angle%90,0)<1){
+				writeUsed();
+			}
+			ctx.rotate(getRad(angle));
+
+			ctx.moveTo(-1 * BL, 16 * BL);//画出一个秒针 x轴-2 y轴20
+			ctx.lineTo(1 * BL,16 * BL);
+			ctx.lineTo(1, -r + 26 * BL);
+			ctx.lineTo(-1, -r + 26 * BL);
+			ctx.fill();
+				
+			ctx.stroke();
+			ctx.closePath();
+		ctx.restore();
+			
+	ctx.restore();
+}
+
+function animate(){
+	if(!paused){
+		draw();
+	
+		//setTimeout( function(){
+	        window.requestAnimationFrame(animate); /// 让浏览器自行决定帧速率
+	    //}, 0.20 * 1000 );// 延时执行
+	}
+}
+
+//---------------------------------------------------Stopwatch类定义开始------------------------------------------------------------------->>
+Stopwatch=function(){}
+Stopwatch.prototype={
+	// Property
+	startTime:0,
+	running:false,
+	elapsed:0,
+	
+	// method
+	start:function(){
+		this.startTime=+new Date();
+		this.elapsed=0;
+		this.running=true;
+	},
+	
+	stop:function(){
+		this.elapsed=(+new Date())-this.startTime;
+		this.running=false;
+	},
+	
+	getElapsedTime:function(){
+		if(this.running){
+			return (+new Date())-this.startTime;
+		}else{
+			return this.elapsed;
+		}
+	},
+	
+	getPointerAngle:function(){
+		var sec=this.getElapsedTime()/1000;
+		return (sec*6) % 360;
+	},
+	
+	getSeconds:function(){
+		var sec=this.getElapsedTime()/1000;
+		return sec;
+	},
+	
+	isRunning:function(){
+		return this.running;
+	},
+	
+	reset:function(){
+		this.elapsed=0;
+	},
+}
+//---------------------------------------------------Stopwatch类定义结束-------------------------------------------------------------------<<
+//  常规函数:角度得到弧度
+function getRad(degree){
+	return degree/180*Math.PI;
+}
+//-->
+</script>
